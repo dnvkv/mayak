@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 # typed: strict
 
+require 'bigdecimal'
+
 module Mayak
   module Numeric
     extend T::Sig

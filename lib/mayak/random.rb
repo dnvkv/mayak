@@ -9,7 +9,8 @@ module Mayak
 
     sig { params(number: T.any(Integer, Float), jitter: Float).returns(Float) }
     def self.jittered(number, jitter: DEFAULT_JITTER)
-      (number + Kernel.rand(number * jitter)).to_f
+      delta = Kernel.rand(0..(number * jitter))
+      (number + delta.to_f).to_f
     end
   end
 end
