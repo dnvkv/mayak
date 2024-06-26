@@ -7,14 +7,15 @@ require_relative 'mayak/cache'
 require_relative 'mayak/function'
 require_relative 'mayak/json'
 require_relative 'mayak/numeric'
-require_relative 'mayak/priority_queue'
-require_relative 'mayak/queue'
 require_relative 'mayak/random'
 require_relative 'mayak/version'
 require_relative 'mayak/weak_ref'
 
 require_relative 'mayak/caching/unbounded_cache'
 require_relative 'mayak/caching/lru_cache'
+
+require_relative 'mayak/collections/priority_queue'
+require_relative 'mayak/collections/queue'
 
 require_relative 'mayak/http/decoder'
 require_relative 'mayak/http/encoder'
