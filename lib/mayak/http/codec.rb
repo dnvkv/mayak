@@ -4,7 +4,7 @@
 require_relative 'encoder'
 require_relative 'decoder'
 
-module Core
+module Mayak
   module Http
     module Codec
       extend T::Sig
