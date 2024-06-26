@@ -2,5 +2,5 @@
 # typed: strict
 
 module Mayak
-  VERSION = T.let("0.0.1", String)
+  VERSION = T.let("0.1.0", String)
 end
