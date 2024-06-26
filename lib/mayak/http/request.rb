@@ -2,6 +2,7 @@
 # typed: strict
 
 require 'uri'
+require_relative 'verb'
 
 module Mayak
   module Http

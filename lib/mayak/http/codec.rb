@@ -1,6 +1,9 @@
 # typed: strong
 # frozen_string_literal: true
 
+require_relative 'encoder'
+require_relative 'decoder'
+
 module Mayak
   module Http
     module Codec
