@@ -9,11 +9,17 @@ Mayak is a library which aims to provide abstractions for well typed programming
 In order to use the library, add the following line to your `Gemfile`:
 
 ```ruby
-gem 'mayak'
+gem "mayak"
 ```
 or install it via the following command:
 ```ruby
-gem install 'mayak'
+gem install "mayak"
+```
+
+If you are using tapioca, add following line into tapioca's `require.rb` before generating rbi's for the gem:
+
+```ruby
+require "mayak"
 ```
 
 ### Documentation
