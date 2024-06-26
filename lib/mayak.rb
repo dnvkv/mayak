@@ -5,6 +5,7 @@ require 'sorbet-runtime'
 
 require_relative 'mayak/cache'
 require_relative 'mayak/function'
+require_relative 'mayak/failable_function'
 require_relative 'mayak/json'
 require_relative 'mayak/numeric'
 require_relative 'mayak/random'
