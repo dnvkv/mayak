@@ -228,8 +228,6 @@ module Mayak
         extend T::Generic
         extend T::Helpers
 
-        final!
-
         FailureType = type_member
         SuccessType = type_member
 
@@ -428,8 +426,6 @@ module Mayak
         extend T::Sig
         extend T::Generic
         extend T::Helpers
-
-        final!
 
         FailureType = type_member
         SuccessType = type_member

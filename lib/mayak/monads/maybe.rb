@@ -174,8 +174,6 @@ module Mayak
         extend T::Generic
         extend T::Helpers
 
-        final!
-
         Value = type_member
 
         include ::Mayak::Monads::Maybe
@@ -305,8 +303,6 @@ module Mayak
         extend T::Sig
         extend T::Generic
         extend T::Helpers
-
-        final!
 
         Value = type_member
 

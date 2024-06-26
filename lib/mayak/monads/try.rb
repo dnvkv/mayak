@@ -224,8 +224,6 @@ module Mayak
         extend T::Sig
         extend T::Generic
 
-        final!
-
         Value = type_member
 
         include Mayak::Monads::Try
@@ -393,8 +391,6 @@ module Mayak
       class Failure
         extend T::Sig
         extend T::Generic
-
-        final!
 
         Value = type_member
 
