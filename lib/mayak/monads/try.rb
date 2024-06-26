@@ -10,7 +10,7 @@ module Mayak
       abstract!
       sealed!
 
-      Value = type_member
+      Value = type_member(:out)
 
       sig {
         abstract
@@ -48,7 +48,12 @@ module Mayak
       def failure?
       end
 
-      sig { abstract.params(value: Value).returns(Value) }
+      sig {
+        abstract
+          .type_parameters(:NewValue)
+          .params(value: T.type_parameter(:NewValue))
+          .returns(T.any(T.type_parameter(:NewValue), Value))
+      }
       def success_or(value)
       end
 
@@ -86,9 +91,10 @@ module Mayak
       end
 
       sig {
-        abstract
-          .params(blk: T.proc.params(arg0: StandardError).returns(Try[Value]))
-          .returns(Try[Value])
+        type_parameters(:NewValue)
+          .abstract
+          .params(blk: T.proc.params(arg0: StandardError).returns(Try[T.type_parameter(:NewValue)]))
+          .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
       }
       def flat_map_failure(&blk)
       end
@@ -141,34 +147,39 @@ module Mayak
       end
 
       sig {
-        abstract
-          .params(value: Value)
-          .returns(Try[Value])
+        type_parameters(:NewValue)
+          .abstract
+          .params(value: T.type_parameter(:NewValue))
+          .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
       }
       def recover(value)
       end
 
       sig {
-        abstract
-          .params(blk: T.proc.params(arg0: StandardError).returns(Value))
-          .returns(Try[Value])
+        type_parameters(:NewValue)
+          .abstract
+          .params(blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue)))
+          .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
       }
       def recover_with(&blk)
       end
 
       sig {
-        abstract
+        type_parameters(:NewValue)
+          .abstract
           .params(
             error_type: T.class_of(StandardError),
-            blk: T.proc.params(arg0: StandardError).returns(Value)
+            blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue))
           )
-          .returns(Try[Value])
+          .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
       }
       def recover_on(error_type, &blk)
       end
 
       sig(:final) {
-        params(blk: T.proc.params(arg0: StandardError).returns(Try[Value])).returns(Try[Value])
+        type_parameters(:NewValue)
+          .params(blk: T.proc.params(arg0: StandardError).returns(Try[T.type_parameter(:NewValue)]))
+          .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
       }
       def recover_with_try(&blk)
         flat_map_failure(&blk)
@@ -272,7 +283,12 @@ module Mayak
           false
         end
 
-        sig(:final) { override.params(value: Value).returns(Value) }
+        sig(:final) {
+          override
+            .type_parameters(:NewValue)
+            .params(value: T.any(T.type_parameter(:NewValue), Value))
+            .returns(T.any(T.type_parameter(:NewValue), Value))
+        }
         def success_or(value)
           @value
         end
@@ -316,9 +332,10 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .params(blk: T.proc.params(arg0: StandardError).returns(Try[Value]))
-            .returns(Try[Value])
+          type_parameters(:NewValue)
+            .override
+            .params(blk: T.proc.params(arg0: StandardError).returns(Try[T.type_parameter(:NewValue)]))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def flat_map_failure(&blk)
           self
@@ -340,27 +357,34 @@ module Mayak
         end
 
         sig(:final) {
-          override
+          type_parameters(:NewValue)
+            .override
             .params(
               error_type: T.class_of(StandardError),
-              blk: T.proc.params(arg0: StandardError).returns(Value)
+              blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue))
             )
-            .returns(Try[Value])
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def recover_on(error_type, &blk)
           self
         end
 
         sig(:final) {
-          override
-            .params(value: Value)
-            .returns(Try[Value])
+          type_parameters(:NewValue)
+            .override
+            .params(value: T.type_parameter(:NewValue))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def recover(value)
           self
         end
 
-        sig(:final) { override.params(blk: T.proc.params(arg0: StandardError).returns(Value)).returns(Try[Value]) }
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue)))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
+        }
         def recover_with(&blk)
           self
         end
@@ -431,7 +455,12 @@ module Mayak
           true
         end
 
-        sig(:final) { override.params(value: Value).returns(Value) }
+        sig(:final) {
+          override
+            .type_parameters(:NewValue)
+            .params(value: T.any(T.type_parameter(:NewValue), Value))
+            .returns(T.any(T.type_parameter(:NewValue), Value))
+        }
         def success_or(value)
           value
         end
@@ -474,9 +503,10 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .params(blk: T.proc.params(arg0: StandardError).returns(Try[Value]))
-            .returns(Try[Value])
+          type_parameters(:NewValue)
+            .override
+            .params(blk: T.proc.params(arg0: StandardError).returns(Try[T.type_parameter(:NewValue)]))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def flat_map_failure(&blk)
           blk.call(@failure)
@@ -494,37 +524,44 @@ module Mayak
 
         sig(:final) { override.returns(Mayak::Monads::Maybe[Value]) }
         def to_maybe
-          Mayak::Monads::Maybe::None.new
+          ::Mayak::Monads::Maybe::None[Value].new
         end
 
         sig(:final) {
-          override
+          type_parameters(:NewValue)
+            .override
             .params(
               error_type: T.class_of(StandardError),
-              blk: T.proc.params(arg0: StandardError).returns(Value)
+              blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue))
             )
-            .returns(Try[Value])
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def recover_on(error_type, &blk)
           if @failure.is_a?(error_type)
-            Mayak::Monads::Try::Success[Value].new(blk.call(@failure))
+            ::Mayak::Monads::Try::Success[T.any(T.type_parameter(:NewValue), Value)].new(blk.call(@failure))
           else
             self
           end
         end
 
         sig(:final) {
-          override
-            .params(value: Value)
-            .returns(Try[Value])
+          type_parameters(:NewValue)
+            .override
+            .params(value: T.type_parameter(:NewValue))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
         }
         def recover(value)
-          Mayak::Monads::Try::Success[Value].new(value)
+          ::Mayak::Monads::Try::Success[T.any(T.type_parameter(:NewValue), Value)].new(value)
         end
 
-        sig(:final) { override.params(blk: T.proc.params(arg0: StandardError).returns(Value)).returns(Try[Value]) }
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(blk: T.proc.params(arg0: StandardError).returns(T.type_parameter(:NewValue)))
+            .returns(Try[T.any(T.type_parameter(:NewValue), Value)])
+        }
         def recover_with(&blk)
-          Mayak::Monads::Try::Success[Value].new(blk.call(@failure))
+          ::Mayak::Monads::Try::Success[T.any(T.type_parameter(:NewValue), Value)].new(blk.call(@failure))
         end
       end
 
