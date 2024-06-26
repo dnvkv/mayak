@@ -16,6 +16,7 @@ require_relative 'mayak/weak_ref'
 require_relative 'mayak/decoder'
 require_relative 'mayak/encoder'
 require_relative 'mayak/hash_serializable'
+require_relative 'mayak/lazy'
 
 require_relative 'mayak/caching/unbounded_cache'
 require_relative 'mayak/caching/lru_cache'
