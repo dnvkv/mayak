@@ -20,6 +20,11 @@ module Mayak
     class ParsingError < StandardError
     end
 
+    sig { params(obj: JsonType).returns(String) }
+    def self.dump(obj)
+      JSON.dump(obj)
+    end
+
     sig { params(string: String).returns(Mayak::Monads::Try[JsonType]) }
     def self.parse(string)
       Mayak::Monads::Try::Success.new(JSON.parse(string))

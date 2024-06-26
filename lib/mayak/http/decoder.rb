@@ -1,6 +1,8 @@
 # typed: strong
 # frozen_string_literal: true
 
+require_relative "../monads/try"
+
 module Mayak
   module Http
     module Decoder
@@ -8,16 +10,20 @@ module Mayak
       extend T::Generic
       extend T::Helpers
 
-      interface!
+      abstract!
 
-      ResponseEntity = type_member
+      include ::Mayak::Decoder
+
+      RequestType   = type_member {{ fixed: ::Mayak::Http::Request }}
+      RequestEntity = type_member
 
       sig {
-        abstract
-          .params(response: Mayak::Http::Response)
-          .returns(Mayak::Monads::Try[ResponseEntity])
+        type_parameters(:A)
+          .params(blk: T.proc.params(arg: String).returns(Mayak::Monads::Try[T.type_parameter(:A)]))
+          .returns(::Mayak::Http::Decoder[T.type_parameter(:A)])
       }
-      def decode(response)
+      def self.decode_body(&blk)
+        FunctionFromBodyDecoder.new(decoder: blk)
       end
 
       class IdentityDecoder
@@ -27,15 +33,38 @@ module Mayak
 
         include ::Mayak::Http::Decoder
 
-        ResponseEntity = type_member { { fixed: ::Mayak::Http::Response } }
+        RequestType   = type_member {{ fixed: ::Mayak::Http::Request }}
+        RequestEntity = type_member {{ fixed: ::Mayak::Http::Request }}
 
         sig {
           override
-            .params(response: Mayak::Http::Response)
-            .returns(Mayak::Monads::Try[ResponseEntity])
+            .params(response: RequestType)
+            .returns(Mayak::Monads::Try[RequestEntity])
         }
         def decode(response)
-          Mayak::Monads::Try::Success[ResponseEntity].new(response)
+          Mayak::Monads::Try::Success.new(response)
+        end
+      end
+
+      class FunctionFromBodyDecoder < T::Struct
+        extend T::Sig
+        extend T::Generic
+        extend T::Helpers
+
+        include ::Mayak::Http::Decoder
+
+        RequestType   = type_member {{ fixed: ::Mayak::Http::Request }}
+        RequestEntity = type_member
+
+        const :decoder, T.proc.params(arg: String).returns(Mayak::Monads::Try[RequestEntity])
+
+        sig {
+          override
+            .params(response: RequestType)
+            .returns(Mayak::Monads::Try[RequestEntity])
+        }
+        def decode(response)
+          decoder.call(response.body || "")
         end
       end
     end

@@ -8,13 +8,12 @@ module Mayak
       extend T::Generic
       extend T::Helpers
 
-      interface!
+      abstract!
 
-      RequestEntity = type_member
+      include ::Mayak::Encoder
 
-      sig { abstract.params(entity: RequestEntity).returns(Mayak::Http::Request) }
-      def encode(entity)
-      end
+      ResponseEntity = type_member
+      ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
 
       class IdentityEncoder
         extend T::Sig
@@ -23,9 +22,10 @@ module Mayak
 
         include ::Mayak::Http::Encoder
 
-        RequestEntity = type_member { { fixed: ::Mayak::Http::Request } }
+        ResponseEntity = type_member {{ fixed: ::Mayak::Http::Response }}
+        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
 
-        sig { override.params(entity: RequestEntity).returns(Mayak::Http::Request) }
+        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
         def encode(entity)
           entity
         end
@@ -38,16 +38,40 @@ module Mayak
 
         include ::Mayak::Http::Encoder
 
-        RequestEntity = type_member
+        ResponseEntity = type_member
+        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
 
-        sig { params(function: Mayak::Function[RequestEntity, Mayak::Http::Request]).void }
-        def initialize(function)
-          @function = T.let(function, Mayak::Function[RequestEntity, Mayak::Http::Request])
+        sig { params(function: T.proc.params(response: ResponseEntity).returns(ResponseType)).void }
+        def initialize(&function)
+          @function = T.let(function, T.proc.params(response: ResponseEntity).returns(ResponseType))
         end
 
-        sig { override.params(entity: RequestEntity).returns(Mayak::Http::Request) }
+        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
         def encode(entity)
           @function.call(entity)
+        end
+      end
+
+      class FromHashSerializableJson < T::Struct
+        extend T::Sig
+        extend T::Generic
+        extend T::Helpers
+
+        include ::Mayak::Http::Encoder
+
+        const :default_status,  Integer
+        const :default_headers, T::Hash[String, String]
+
+        ResponseEntity = type_member {{ fixed: ::Mayak::HashSerializable }}
+        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
+
+        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
+        def encode(entity)
+          Mayak::Http::Response.new(
+            status:  default_status,
+            headers: default_headers,
+            body:    Mayak::Json.dump(entity.serialize)
+          )
         end
       end
     end
