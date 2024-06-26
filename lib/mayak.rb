@@ -14,14 +14,15 @@ require_relative 'mayak/version'
 require_relative 'mayak/weak_ref'
 
 require_relative 'mayak/caching/unbounded_cache'
+require_relative 'mayak/caching/lru_cache'
 
-require_relative 'mayak/http/client'
-require_relative 'mayak/http/codec'
 require_relative 'mayak/http/decoder'
 require_relative 'mayak/http/encoder'
 require_relative 'mayak/http/request'
 require_relative 'mayak/http/response'
 require_relative 'mayak/http/verb'
+require_relative 'mayak/http/client'
+require_relative 'mayak/http/codec'
 
 require_relative 'mayak/monads/maybe'
 require_relative 'mayak/monads/result'
