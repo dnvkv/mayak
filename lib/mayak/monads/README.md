@@ -25,10 +25,10 @@ anything and represents `nil`.
 
 The monad can be created with two primary constructors `Maybe` and `None` (note that these are methods).
 Method `#Maybe` wraps a nilable value with a `Maybe` class: if a value is nil, than it returns value of `None`,
-if the value is present, it returns instance of `Some`. In order to access these helpers`Core::Monads::Maybe::Mixin` must be included first:
+if the value is present, it returns instance of `Some`. In order to access these helpers`Mayak::Monads::Maybe::Mixin` must be included first:
 
 ```ruby
-include Core::Monads::Maybe::Mixin
+include Mayak::Monads::Maybe::Mixin
 
 sig { params(numbers: T::Array[Integer]).returns(T.nilable(Integer)) }
 def first(numbers)
@@ -39,30 +39,30 @@ Maybe(first[])  # None
 Maybe(first[1]) # Some[Integer](value = 1)
 ```
 
-Also, the monad can be instantiated directly with `Core::Monads::Maybe::Some` and `Core::Monads::Maybe::None`:
+Also, the monad can be instantiated directly with `Mayak::Monads::Maybe::Some` and `Mayak::Monads::Maybe::None`:
 
 ```ruby
-sig { returns(Core::Monads::Maybe[Integer]) }
+sig { returns(Mayak::Monads::Maybe[Integer]) }
 def some
-  Core::Monads::Maybe::Some[Integer].new(10)
+  Mayak::Monads::Maybe::Some[Integer].new(10)
 end
 
-sig { returns(Core::Monads::Maybe[Integer]) }
+sig { returns(Mayak::Monads::Maybe[Integer]) }
 def none
-  Core::Monads::Maybe::None[Integer].new
+  Mayak::Monads::Maybe::None[Integer].new
 end
 ```
 
 ### Unpacking
 
-In order to retrieve a value from a `Maybe` a method `#value` which is defined on `Core::Monads::Maybe::Some` can be used.
-`Core::Monads::Maybe::Some` is a subtask of `Maybe`. Note that the accessor is only defined on `Some` subtype, so if the `#value`
+In order to retrieve a value from a `Maybe` a method `#value` which is defined on `Mayak::Monads::Maybe::Some` can be used.
+`Mayak::Monads::Maybe::Some` is a subtask of `Maybe`. Note that the accessor is only defined on `Some` subtype, so if the `#value`
 method will be called on an instance of `Maybe`, Sorbet will not type-check, since `Maybe` doesn't have this method.
 In order to access value of `Maybe`, it need to be verified first that the monad is instance of `Some`, and only after that
 this method can invoked. The most convenient way to do this is to use case-when statement.
 
 ```ruby
-sig { params(a: Integer, b: Integer).returns(Core::Monads::Maybe[Integer]) }
+sig { params(a: Integer, b: Integer).returns(Mayak::Monads::Maybe[Integer]) }
 def divide(a, b)
   if b == 0
     None()
@@ -75,11 +75,11 @@ sig { params(a: Integer, b: Integer).void }
 def print_result_divide(a, b)
   result = divide(a, b)
   case result
-  when Core::Monads::Maybe::Some
-    # sorbet's flow-typing down-casts result to Core::Monads::Maybe::Some
-    # so type of this variable is Core::Monads::Maybe::Some in this branch
+  when Mayak::Monads::Maybe::Some
+    # sorbet's flow-typing down-casts result to Mayak::Monads::Maybe::Some
+    # so type of this variable is Mayak::Monads::Maybe::Some in this branch
     puts "#{a} / #{b} = #{result.value}"
-  when Core::Monads::Maybe::None
+  when Mayak::Monads::Maybe::None
     puts "Division by zero"
   else
     T.absurd(result)
@@ -105,7 +105,7 @@ divide(10, 0).value_or(0) # 0
 Converts an instance of a monad in to an instance of corresponding dry-monad.
 
 ```ruby
-include Core::Monads::Maybe::Mixin
+include Mayak::Monads::Maybe::Mixin
 
 Maybe(10).to_dry  # Some(10): Dry::Monads::Maybe::Some
 Maybe(nil).to_dry # None:  Dry::Monads::Maybe::None
@@ -113,10 +113,10 @@ Maybe(nil).to_dry # None:  Dry::Monads::Maybe::None
 
 #### `.from_dry`
 
-Converts instance of `Dry::Monads::Maybe` into instance `Core::Monads::Maybe`
+Converts instance of `Dry::Monads::Maybe` into instance `Mayak::Monads::Maybe`
 
 ```ruby
-include Core::Monads
+include Mayak::Monads
 
 Maybe.from_dry(Dry::Monads::Some(10)) # Some[Integer](value = 20)
 Maybe.from_dry(Dry::Monads::None())   # None
@@ -127,14 +127,14 @@ Maybe.from_dry(Dry::Monads::None())   # None
 The same as `fmap` in a dry-monads `Maybe`. Allows to modify the value with a block if it's present.
 
 ```ruby
-sig { returns(Core::Monads::Maybe[Integer]) }
+sig { returns(Mayak::Monads::Maybe[Integer]) }
 def some
-  Core::Monads::Maybe::Some[Integer].new(10)
+  Mayak::Monads::Maybe::Some[Integer].new(10)
 end
 
-sig { returns(Core::Monads::Maybe[Integer]) }
+sig { returns(Mayak::Monads::Maybe[Integer]) }
 def none
-  Core::Monads::Maybe::None[Integer].new
+  Mayak::Monads::Maybe::None[Integer].new
 end
 
 some.map { |a| a + 20 } # Some[Integer](value = 20)
@@ -146,12 +146,12 @@ The same as `bind` in a dry-monads `Maybe`. Allows to modify the value with a bl
 if it's present, otherwise returns `None`. If the block returns `None`, the whole computation returns `None`.
 
 ```ruby
-sig { params(a: Integer, b: Integer).returns(Core::Monads::Maybe[Integer]) }
+sig { params(a: Integer, b: Integer).returns(Mayak::Monads::Maybe[Integer]) }
 def divide(a, b)
   if b.zero?
-    Core::Monads::Maybe::None[Integer].new
+    Mayak::Monads::Maybe::None[Integer].new
   else
-    Core::Monads::Maybe::Some[Integer].new(a / b)
+    Mayak::Monads::Maybe::Some[Integer].new(a / b)
   end
 end
 
@@ -205,7 +205,7 @@ Converts a value to task. If a `Maybe` is an instance of `Some`, it returns succ
 it returns failed task with a provided error.
 
 ```ruby
-task = Core::Concurrent::Task.execute { 100 }
+task = Mayak::Concurrent::Task.execute { 100 }
 error = StandardError.new("Division by zero")
 task.flat_map { |value| divide(value, 10).to_task(error) }.await! # 10
 task.flat_map { |value| divide(value, 0).to_task(error) }.await!  # StandardError: Divison by zero
@@ -380,7 +380,7 @@ Do-notation instead of `#map` and `#flat_map` chaining, and let's break down how
 
 ```ruby
 # Make sure you have the Mixin included
-include Core::Monads::Maybe::Mixin
+include Mayak::Monads::Maybe::Mixin
 
 sig { params(user_id: Integer).returns(Maybe[UserAddressCache]) }
 def run(user_id)
@@ -457,7 +457,7 @@ for_maybe {
 }
 ```
 
-A major improvement upon `dry-monads` do-notation, is that `Core::Monad`s do-notation if fully typed.
+A major improvement upon `dry-monads` do-notation, is that `Mayak::Monad`s do-notation if fully typed.
 Do-notations infers both result type of the whole computation, and a type of a value unwrapped by `do_maybe!`
 
 ```ruby
@@ -484,13 +484,13 @@ and `Success`, which contains a success value of given type.
 
 ### Initialization
 
-The primary way to create an instance of `Try` is to use constructor method `#Try` from `Core::Monads::Try::Mixin`.
+The primary way to create an instance of `Try` is to use constructor method `#Try` from `Mayak::Monads::Try::Mixin`.
 This method receives a block that may raise exceptions. If an exception has been raised inside the block,
 the method will return instance of `Try::Failure` containing an error. Otherwise the method will return result of the block
 wrapped into `Try::Success`
 
 ```ruby
-include Core::Monads::Try::Mixin
+include Mayak::Monads::Try::Mixin
 
 Try { 10 } # Try::Success[Integer](@value=10)
 Try {
@@ -562,8 +562,8 @@ Try(CustomError1, CustomError2) {
 
 `Try` can also be initialized directly be invoking constructors of its subtypes:
 ```ruby
-Core::Monads::Try::Success[Integer].new(10) # Try::Success[Integer](@value=10)
-Core::Monads::Try::Failure[Integer].new(StandardError.new) # Try::Failure[Integer](@failure=#<StandardError: StandardError>)
+Mayak::Monads::Try::Success[Integer].new(10) # Try::Success[Integer](@value=10)
+Mayak::Monads::Try::Failure[Integer].new(StandardError.new) # Try::Failure[Integer](@failure=#<StandardError: StandardError>)
 ```
 
 ### Unpacking
@@ -581,13 +581,13 @@ Try { raise "Error" }.failure? # true
 ```
 
 In order to retrieve a successful value from `Try`, a method `#success` can be used. This method is only defined
-on `Core::Monads::Try::Success`, which is subtype of `Core::Monads::Try`. In order to invoke this method without getting an error from sorbet,
+on `Mayak::Monads::Try::Success`, which is subtype of `Mayak::Monads::Try`. In order to invoke this method without getting an error from sorbet,
 instance of `Try` should be first coerced to checked and coerced to `Try::Success`. This can be done safely with pattern matching:
 
 ```ruby
 try = Try { 10 }
 value = case try
-when Core::Monads::Try::Success
+when Mayak::Monads::Try::Success
   try.success
 else
   nil
@@ -600,7 +600,7 @@ If an instance of `Try` is a `Failure`, error can be retrieved via `#failure`:
 ```ruby
 try = Try { raise "Error" }
 value = case try
-when Core::Monads::Try::Failure
+when Mayak::Monads::Try::Failure
   try.failure
 when
   nil
@@ -626,7 +626,7 @@ Try { raise "Boom" }.failure_or(StandardError.new("Error")) # #<StandardError: B
 Converts an instance of a monad in to an instance of corresponding dry-monad.
 
 ```ruby
-include Core::Monads::Try::Mixin
+include Mayak::Monads::Try::Mixin
 
 Try { 10 }.to_dry  # Try::Value(10)
 Try { raise "Error" }.to_dry # Try::Error(RuntimeError: Error)
@@ -635,10 +635,10 @@ Try { raise "Error" }.to_dry # Try::Error(RuntimeError: Error)
 
 #### `.from_dry`
 
-Converts instance of `Dry::Monads::Try` into instance `Core::Monads::Try`
+Converts instance of `Dry::Monads::Try` into instance `Mayak::Monads::Try`
 
 ```ruby
-include Core::Monads
+include Mayak::Monads
 
 error = StandardError.new("Error")
 Try.from_dry(Dry::Monads::Try::Value.new([StandardError], 10)) # Try::Success[T.untyped](value = 10)
@@ -646,21 +646,21 @@ Try.from_dry(Dry::Monads::Try::Error.new(error))   # Try::Failure[T.untyped](err
 ```
 
 Unfortunately `.from_dry` doesn't preserve types due to the way `Dry::Monads::Try` is written, so
-this method always returns `Core::Monads::Try[T.untyped]`.
+this method always returns `Mayak::Monads::Try[T.untyped]`.
 
 #### `#map`
 
 The same as `fmap` in a dry-monads `Try`. Allows to modify the value with a block if it's present.
 
 ```ruby
-sig { returns(Core::Monads::Try[Integer]) }
+sig { returns(Mayak::Monads::Try[Integer]) }
 def success
-  Core::Monads::Try::Success[Integer].new(10)
+  Mayak::Monads::Try::Success[Integer].new(10)
 end
 
-sig { returns(Core::Monads::Try[Integer]) }
+sig { returns(Mayak::Monads::Try[Integer]) }
 def failure
-  Core::Monads::Try::Failure[Integer].new(StandardError.new("Error"))
+  Mayak::Monads::Try::Failure[Integer].new(StandardError.new("Error"))
 end
 
 success.map { |a| a + 20 } # Success[Integer](value = 20)
@@ -672,7 +672,7 @@ The same as `bind` in a dry-monads `Try`. Allows to modify the value with a bloc
 if it's a`Success`, otherwise returns `Failure`. If the block returns `Failure`, the whole computation returns `Failure`.
 
 ```ruby
-sig { params(a: Integer, b: Integer).returns(Core::Monads::Try[Integer]) }
+sig { params(a: Integer, b: Integer).returns(Mayak::Monads::Try[Integer]) }
 def divide(a, b)
   Try { a / b }
 end
@@ -794,19 +794,19 @@ Allows to recover from error with a computation, that can fail too.
 
 ```ruby
 divide(10, 2).flat_map_failure { |_error|
-  Core::Monads::Try::Success[Integer].new(10)
+  Mayak::Monads::Try::Success[Integer].new(10)
 } # Try::Success[Integer](@value=5)
 
 divide(10, 2).flat_map_failure { |error|
-  Core::Monads::Try::Failure[Integer].new(StandardError.new(error.message))
+  Mayak::Monads::Try::Failure[Integer].new(StandardError.new(error.message))
 } # Try::Success[Integer](@value=5)
 
 divide(10, 0).flat_map_failure { |error|
-  Core::Monads::Try::Success[Integer].new(10)
+  Mayak::Monads::Try::Success[Integer].new(10)
 } # Try::Success[Integer](@value=2)
 
 divide(10, 0).flat_map_failure { |error|
-  Core::Monads::Try::Failure[Integer].new(CustomError.new(error.message))
+  Mayak::Monads::Try::Failure[Integer].new(CustomError.new(error.message))
 } # Try::Failure[Integer](@failure=#<CustomError: Division by zero>)
 ```
 
@@ -826,7 +826,7 @@ Converts a value to task. If a `Try` is an instance of `Success`, it returns suc
 it returns failed task with an `Failure`'s error.
 
 ```ruby
-task = Core::Concurrent::Task.execute { 100 }
+task = Mayak::Concurrent::Task.execute { 100 }
 task.flat_map { |value| divide(value, 10).to_task }.await! # 10
 task.flat_map { |value| divide(value, 0).to_task }.await!  # StandardError: Divison by zero
 ```
@@ -883,8 +883,8 @@ end
 class CustomError2 < StandardError
 end
 
-failure1 = Core::Monads::Try::Failure[String].new(CustomError1.new("Error1"))
-failure2 = Core::Monads::Try::Failure[String].new(CustomError2.new("Error2"))
+failure1 = Mayak::Monads::Try::Failure[String].new(CustomError1.new("Error1"))
+failure2 = Mayak::Monads::Try::Failure[String].new(CustomError2.new("Error2"))
 
 failure1.recover_on(CustomError1) { |error| error.message } # Try::Success[String](@value="Error1")
 failure2.recover_on(CustomError1) { |error| error.message } # Try::Failure[String](@failure=#<CustomError2: Error2>)
@@ -911,7 +911,7 @@ If all elements of the array is `Success`, then the method returns `Try::Sucess`
 otherwise the method returns `Try::Failure` containing first error.
 
 ```ruby
-include Core::Monads
+include Mayak::Monads
 
 values = [
   Try::Success[Integer].new(1),
@@ -1023,7 +1023,7 @@ a success value. The difference between `Result` and `Try`, is that `Result` has
 
 ### Initialization
 
-The primary way to create an instance of `Try` is to use constructor method `#Try` from `Core::Monads::Try::Mixin`.
+The primary way to create an instance of `Try` is to use constructor method `#Try` from `Mayak::Monads::Try::Mixin`.
 This method receives a block that may raise exceptions. If an exception has been raised inside the block,
 the method will return instance of `Try::Failure` containing an error. Otherwise the method will return result of the block
 wrapped into `Try::Success`
@@ -1031,7 +1031,7 @@ wrapped into `Try::Success`
 `Result` can be created via primary constructors of `Result::Success` and `Result::Failure`:
 
 ```ruby
-include Core::Monads
+include Mayak::Monads
 
 Result::Success[String, Integer].new(10)
 Result::Failure[String, Integer].new("Error")
@@ -1100,7 +1100,7 @@ Result::Failure[String, Integer].new("Error").to_dry # Failure("Error"): Dry::Mo
 
 #### `.from_dry`
 
-Converts instance of `Dry::Monads::Result` into instance `Core::Monads::Result`
+Converts instance of `Dry::Monads::Result` into instance `Mayak::Monads::Result`
 
 ```ruby
 sig { returns(Dry::Monads::Result::Success[String, Integer]) }
@@ -1113,12 +1113,12 @@ def dry_failure
   Dry::Monads::Result::Failure.new("Error")
 end
 
-Try.from_dry(dry_success) # Core::Monads::Result::Success[String, Integer](value = 10)
-Try.from_dry(dry_failure) # Core::Monads::Result::Success[String, Integer]("Error")
+Try.from_dry(dry_success) # Mayak::Monads::Result::Success[String, Integer](value = 10)
+Try.from_dry(dry_failure) # Mayak::Monads::Result::Success[String, Integer]("Error")
 ```
 
 Unfortunately `.from_dry` doesn't preserve types due to the way `Dry::Monads::Try` is written, so
-this method always returns `Core::Monads::Try[T.untyped]`.
+this method always returns `Mayak::Monads::Try[T.untyped]`.
 
 #### `#map`
 
@@ -1145,7 +1145,7 @@ The same as `bind` in a dry-monads `Result`. Allows to modify the value with a b
 if it's a `Result::Success`, otherwise returns `Result::Failure`. If the block returns `Result::Failure`, the whole computation returns `Result::Failure`.
 
 ```ruby
-sig { params(a: Integer, b: Integer).returns(Core::Monads::Result[String, Integer]) }
+sig { params(a: Integer, b: Integer).returns(Mayak::Monads::Result[String, Integer]) }
 def divide(a, b)
   if a == 0
     Result::Failure[String, Integer].new("Division by zero")
@@ -1292,7 +1292,7 @@ If a `Result` is an instance of `Result::Success`, it returns succeeded task.
 If it's a `Result::Failure`, it returns failed task with an `Failure`'s error returned by the block.
 
 ```ruby
-task = Core::Concurrent::Task.execute { 100 }
+task = Mayak::Concurrent::Task.execute { 100 }
 
 task.flat_map { |value|
   divide(value, 10).to_task { |error| StandardError.new(error) }
@@ -1386,7 +1386,7 @@ If all elements of the array is `Result::Success`, then the method returns `Resu
 otherwise the method returns `Result::Failure` containing first error.
 
 ```ruby
-include Core::Monads
+include Mayak::Monads
 
 values = [
   Result::Success[String, Integer].new(1),

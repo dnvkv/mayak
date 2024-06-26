@@ -27,7 +27,6 @@ module Mayak
 
         include ::Mayak::Http::Decoder
 
-
         ResponseEntity = type_member { { fixed: ::Mayak::Http::Response } }
 
         sig {
