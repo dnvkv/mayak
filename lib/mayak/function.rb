@@ -32,6 +32,11 @@ module Mayak
       ::Mayak::Function[T.type_parameter(:Input), T.type_parameter(:Output)].new { |input| proc.call(input) }
     end
 
+    sig { returns(T.proc.params(arg0: Input).returns(Output)) }
+    def to_proc
+      -> (input) { call(input) }
+    end
+
     sig { params(input: Input).returns(Output) }
     def call(input)
       blk.call(input)
