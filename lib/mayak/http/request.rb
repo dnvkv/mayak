@@ -18,7 +18,7 @@ module Mayak
 
       sig(:final) { params(other: Mayak::Http::Request).returns(T::Boolean) }
       def ==(other)
-        verb == other.verb && url.to_s == other.url.to_s && headers && other.headers && body == other.body
+        verb == other.verb && url.to_s == other.url.to_s && headers == other.headers && body == other.body
       end
 
       sig(:final) { params(other: Mayak::Http::Request).returns(T::Boolean) }

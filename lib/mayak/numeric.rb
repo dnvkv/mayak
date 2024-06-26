@@ -37,10 +37,17 @@ module Mayak
       when BigDecimal
         Mayak::Monads::Maybe::Some[BigDecimal].new(value)
       when Float
-        Mayak::Monads::Maybe::Some[BigDecimal].new(value.to_d)
+        Mayak::Monads::Maybe::Some[BigDecimal].new(BigDecimal(value, Float::DIG + 1))
       end
     rescue ArgumentError, TypeError
       Mayak::Monads::Maybe::None[BigDecimal].new
+    end
+
+    sig { params(value: BigDecimal, total: BigDecimal).returns(BigDecimal) }
+    def self.percent_of(value:, total:)
+      return BigDecimal(0) if total.zero?
+
+      value / total * BigDecimal(100)
     end
   end
 end
