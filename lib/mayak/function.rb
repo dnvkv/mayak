@@ -18,6 +18,20 @@ module Mayak
       @blk = T.let(blk, T.proc.params(input: Input).returns(Output))
     end
 
+    sig {
+      type_parameters(
+        :Input,
+        :Output
+      ).params(
+        proc: T.proc.params(arg0: T.type_parameter(:Input)).returns(T.type_parameter(:Output))
+      ).returns(
+        ::Mayak::Function[T.type_parameter(:Input), T.type_parameter(:Output)]
+      )
+    }
+    def self.from_proc(proc)
+      ::Mayak::Function[T.type_parameter(:Input), T.type_parameter(:Output)].new { |input| proc.call(input) }
+    end
+
     sig { params(input: Input).returns(Output) }
     def call(input)
       blk.call(input)
