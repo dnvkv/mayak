@@ -32,8 +32,6 @@ end
 
 class Binding
   def clone(); end
-
-  def irb(); end
 end
 
 class Bundler::APIResponseInvalidDependenciesError
