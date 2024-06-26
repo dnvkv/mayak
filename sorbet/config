@@ -1,3 +1,4 @@
 --dir
 .
 --ignore=/vendor/bundle
+--ignore=lib/bundled_rbi/mayak.rbi
