@@ -11,7 +11,7 @@ module Mayak
       abstract!
       sealed!
 
-      Value = type_member
+      Value = type_member(:out)
 
       sig {
         abstract
@@ -49,7 +49,12 @@ module Mayak
       def none?
       end
 
-      sig { abstract.params(value: Value).returns(Value) }
+      sig {
+        abstract
+          .type_parameters(:AnotherValue)
+          .params(value: T.type_parameter(:AnotherValue))
+          .returns(T.any(T.type_parameter(:AnotherValue), Value))
+      }
       def value_or(value)
       end
 
@@ -64,10 +69,12 @@ module Mayak
       sig {
         abstract
           .type_parameters(:Result)
-          .params(fallback: T.type_parameter(:Result), blk: T.proc.params(arg0: Value).returns(T.type_parameter(:Result)))
-          .returns(T.type_parameter(:Result))
+          .params(
+            none_branch: T.proc.returns(T.type_parameter(:Result)),
+            some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
+          ).returns(T.type_parameter(:Result))
       }
-      def either(fallback, &blk)
+      def either(none_branch, some_branch)
       end
 
       sig {
@@ -92,8 +99,22 @@ module Mayak
         map { |_| new_value }
       end
 
-      sig { abstract.params(value: Value).returns(Maybe[Value]) }
+      sig {
+        type_parameters(:NewValue)
+          .abstract
+          .params(value: T.type_parameter(:NewValue))
+          .returns(Maybe[T.any(T.type_parameter(:NewValue), Value)])
+      }
       def recover(value)
+      end
+
+      sig {
+        type_parameters(:NewValue)
+          .abstract
+          .params(maybe: Maybe[T.type_parameter(:NewValue)])
+          .returns(Maybe[T.any(T.type_parameter(:NewValue), Value)])
+      }
+      def recover_with_maybe(maybe)
       end
 
       sig(:final) { params(another: Mayak::Monads::Maybe[T.untyped]).returns(T::Boolean) }
@@ -212,7 +233,12 @@ module Mayak
           false
         end
 
-        sig(:final) { override.params(value: Value).returns(Value) }
+        sig(:final) {
+          override
+            .type_parameters(:AnotherValue)
+            .params(value: T.any(T.type_parameter(:AnotherValue), Value))
+            .returns(T.any(T.type_parameter(:AnotherValue), Value))
+        }
         def value_or(value)
           @value
         end
@@ -230,11 +256,13 @@ module Mayak
         sig(:final) {
           override
             .type_parameters(:Result)
-            .params(fallback: T.type_parameter(:Result), blk: T.proc.params(arg0: Value).returns(T.type_parameter(:Result)))
-            .returns(T.type_parameter(:Result))
+            .params(
+              none_branch: T.proc.returns(T.type_parameter(:Result)),
+              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
+            ).returns(T.type_parameter(:Result))
         }
-        def either(fallback, &blk)
-          blk.call(@value)
+        def either(none_branch, some_branch)
+          some_branch.call(@value)
         end
 
         sig(:final) {
@@ -252,8 +280,23 @@ module Mayak
           Mayak::Monads::Try::Success.new(@value)
         end
 
-        sig(:final) { override.params(value: Value).returns(Maybe[Value]) }
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(value: T.type_parameter(:NewValue))
+            .returns(Maybe[T.any(Value, T.type_parameter(:NewValue))])
+        }
         def recover(value)
+          self
+        end
+
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(maybe: Maybe[T.type_parameter(:NewValue)])
+            .returns(Maybe[T.any(Value, T.type_parameter(:NewValue))])
+        }
+        def recover_with_maybe(maybe)
           self
         end
       end
@@ -314,7 +357,12 @@ module Mayak
           true
         end
 
-        sig(:final) { override.params(value: Value).returns(Value) }
+        sig(:final) {
+          override
+            .type_parameters(:AnotherValue)
+            .params(value: T.any(T.type_parameter(:AnotherValue), Value))
+            .returns(T.any(T.type_parameter(:AnotherValue), Value))
+        }
         def value_or(value)
           value
         end
@@ -331,11 +379,13 @@ module Mayak
         sig(:final) {
           override
             .type_parameters(:Result)
-            .params(fallback: T.type_parameter(:Result), blk: T.proc.params(arg0: Value).returns(T.type_parameter(:Result)))
-            .returns(T.type_parameter(:Result))
+            .params(
+              none_branch: T.proc.returns(T.type_parameter(:Result)),
+              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
+            ).returns(T.type_parameter(:Result))
         }
-        def either(fallback, &blk)
-          fallback
+        def either(none_branch, some_branch)
+          none_branch.call
         end
 
         sig(:final) {
@@ -353,9 +403,24 @@ module Mayak
           Mayak::Monads::Try::Failure.new(error)
         end
 
-        sig(:final) { override.params(value: Value).returns(Maybe[Value]) }
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(value: T.type_parameter(:NewValue))
+            .returns(Maybe[T.any(Value, T.type_parameter(:NewValue))])
+        }
         def recover(value)
           Mayak::Monads::Maybe::Some.new(value)
+        end
+
+        sig(:final) {
+          type_parameters(:NewValue)
+            .override
+            .params(maybe: Maybe[T.type_parameter(:NewValue)])
+            .returns(Maybe[T.any(Value, T.type_parameter(:NewValue))])
+        }
+        def recover_with_maybe(maybe)
+          maybe
         end
       end
 

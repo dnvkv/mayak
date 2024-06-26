@@ -11,8 +11,8 @@ module Mayak
       abstract!
       sealed!
 
-      FailureType = type_member
-      SuccessType = type_member
+      FailureType = type_member(:out)
+      SuccessType = type_member(:out)
 
       sig {
         abstract
@@ -24,20 +24,21 @@ module Mayak
       end
 
       sig {
-        abstract
-          .type_parameters(:NewSuccess)
+        type_parameters(:NewSuccess, :NewFailure)
+          .abstract
           .params(
-            blk: T.proc.params(arg0: SuccessType).returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+            blk: T.proc.params(arg0: SuccessType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
           )
-          .returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+          .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), T.type_parameter(:NewSuccess)])
       }
       def flat_map(&blk)
       end
 
       sig {
-        abstract
-          .params(error: FailureType, blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
-          .returns(Result[FailureType, SuccessType])
+        type_parameters(:NewSuccess, :NewFailure)
+          .abstract
+          .params(error: T.type_parameter(:NewFailure), blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
+          .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), SuccessType])
       }
       def filter_or(error, &blk)
       end
@@ -50,11 +51,21 @@ module Mayak
       def failure?
       end
 
-      sig { abstract.params(value: SuccessType).returns(SuccessType) }
+      sig {
+        abstract
+          .type_parameters(:NewSuccessType)
+          .params(value: T.type_parameter(:NewSuccessType))
+          .returns(T.any(T.type_parameter(:NewSuccessType), SuccessType))
+      }
       def success_or(value)
       end
 
-      sig { abstract.params(value: FailureType).returns(FailureType) }
+      sig {
+        abstract
+          .type_parameters(:NewFailureType)
+          .params(value: T.type_parameter(:NewFailureType))
+          .returns(T.any(T.type_parameter(:NewFailureType), FailureType))
+      }
       def failure_or(value)
       end
 
@@ -118,11 +129,11 @@ module Mayak
 
       sig {
         abstract
-          .type_parameters(:NewFailure)
+          .type_parameters(:NewFailure, :NewSuccess)
           .params(
-            blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType])
+            blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
           ).returns(
-            Result[T.type_parameter(:NewFailure), SuccessType]
+            Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
           )
       }
       def flat_map_failure(&blk)
@@ -158,28 +169,30 @@ module Mayak
       end
 
       sig {
-        abstract
-          .params(value: SuccessType)
-          .returns(Result[FailureType, SuccessType])
+        type_parameters(:NewSuccess)
+          .abstract
+          .params(value: T.type_parameter(:NewSuccess))
+          .returns(Result[FailureType, T.any(T.type_parameter(:NewSuccess), SuccessType)])
       }
       def recover(value)
       end
 
       sig {
-        abstract
-          .params(blk: T.proc.params(arg0: FailureType).returns(SuccessType))
-          .returns(Result[FailureType, SuccessType])
+        type_parameters(:NewSuccessType)
+          .abstract
+          .params(blk: T.proc.params(arg0: FailureType).returns(T.type_parameter(:NewSuccessType)))
+          .returns(Result[FailureType, T.any(SuccessType, T.type_parameter(:NewSuccessType))])
       }
       def recover_with(&blk)
       end
 
       sig {
         abstract
-          .type_parameters(:NewFailure)
+          .type_parameters(:NewFailure, :NewSuccess)
           .params(
-            blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType])
+            blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
           ).returns(
-            Result[T.type_parameter(:NewFailure), SuccessType]
+            Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
           )
       }
       def recover_with_result(&blk)
@@ -237,28 +250,30 @@ module Mayak
           Mayak::Monads::Result::Success.new(blk.call(@success_value))
         end
 
+
         sig(:final) {
           override
-            .type_parameters(:NewSuccess)
+            .type_parameters(:NewSuccess, :NewFailure)
             .params(
-              blk: T.proc.params(arg0: SuccessType).returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+              blk: T.proc.params(arg0: SuccessType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
             )
-            .returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+            .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), T.type_parameter(:NewSuccess)])
         }
         def flat_map(&blk)
           blk.call(@success_value)
         end
 
         sig(:final) {
-          override
-            .params(error: FailureType, blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccess, :NewFailure)
+            .override
+            .params(error: T.type_parameter(:NewFailure), blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
+            .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), SuccessType])
         }
         def filter_or(error, &blk)
           if blk.call(@success_value)
             self
           else
-            Mayak::Monads::Result::Failure[FailureType, SuccessType].new(error)
+            ::Mayak::Monads::Result::Failure[T.any(FailureType, T.type_parameter(:NewFailure)), SuccessType].new(error)
           end
         end
 
@@ -277,12 +292,22 @@ module Mayak
           false
         end
 
-        sig(:final) { override.params(value: SuccessType).returns(SuccessType) }
+        sig(:final) {
+          override
+            .type_parameters(:NewSuccessType)
+            .params(value: T.type_parameter(:NewSuccessType))
+            .returns(T.any(T.type_parameter(:NewSuccessType), SuccessType))
+        }
         def success_or(value)
           @success_value
         end
 
-        sig(:final) { override.params(value: FailureType).returns(FailureType) }
+        sig(:final) {
+          override
+            .type_parameters(:NewFailureType)
+            .params(value: T.any(T.type_parameter(:NewFailureType), FailureType))
+            .returns(T.any(T.type_parameter(:NewFailureType), FailureType))
+        }
         def failure_or(value)
           value
         end
@@ -347,12 +372,12 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .type_parameters(:NewFailure)
+          type_parameters(:NewFailure, :NewSuccess)
+            .override
             .params(
-              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType])
+              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
             ).returns(
-              Result[T.type_parameter(:NewFailure), SuccessType]
+              Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
             )
         }
         def flat_map_failure(&blk)
@@ -363,28 +388,33 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .params(value: SuccessType)
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccess)
+            .override
+            .params(value: T.type_parameter(:NewSuccess))
+            .returns(Result[FailureType, T.any(T.type_parameter(:NewSuccess), SuccessType)])
         }
         def recover(value)
           self
         end
 
         sig(:final) {
-          override
-            .params(blk: T.proc.params(arg0: FailureType).returns(SuccessType))
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccessType)
+            .override
+            .params(blk: T.proc.params(arg0: FailureType).returns(T.type_parameter(:NewSuccessType)))
+            .returns(Result[FailureType, T.any(SuccessType, T.type_parameter(:NewSuccessType))])
         }
         def recover_with(&blk)
           self
         end
 
         sig(:final) {
-          override
-            .type_parameters(:NewFailure)
-            .params(blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType]))
-            .returns(Result[T.type_parameter(:NewFailure), SuccessType])
+          type_parameters(:NewFailure, :NewSuccess)
+            .override
+            .params(
+              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
+            ).returns(
+              Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
+            )
         }
         def recover_with_result(&blk)
           T.cast(
@@ -426,11 +456,11 @@ module Mayak
 
         sig(:final) {
           override
-            .type_parameters(:NewSuccess)
+            .type_parameters(:NewSuccess, :NewFailure)
             .params(
-              blk: T.proc.params(arg0: SuccessType).returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+              blk: T.proc.params(arg0: SuccessType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
             )
-            .returns(Result[FailureType, T.type_parameter(:NewSuccess)])
+            .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), T.type_parameter(:NewSuccess)])
         }
         def flat_map(&blk)
           T.cast(
@@ -440,9 +470,10 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .params(error: FailureType, blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccess, :NewFailure)
+            .override
+            .params(error: T.type_parameter(:NewFailure), blk: T.proc.params(arg0: SuccessType).returns(T::Boolean))
+            .returns(Result[T.any(FailureType, T.type_parameter(:NewFailure)), SuccessType])
         }
         def filter_or(error, &blk)
           self
@@ -463,12 +494,22 @@ module Mayak
           true
         end
 
-        sig(:final) { override.params(value: SuccessType).returns(SuccessType) }
+        sig(:final) {
+          override
+            .type_parameters(:NewSuccessType)
+            .params(value: T.type_parameter(:NewSuccessType))
+            .returns(T.any(T.type_parameter(:NewSuccessType), SuccessType))
+        }
         def success_or(value)
           value
         end
 
-        sig(:final) { override.params(value: FailureType).returns(FailureType) }
+        sig(:final) {
+          override
+            .type_parameters(:NewFailureType)
+            .params(value: T.any(T.type_parameter(:NewFailureType), FailureType))
+            .returns(T.any(T.type_parameter(:NewFailureType), FailureType))
+        }
         def failure_or(value)
           @failure_value
         end
@@ -529,12 +570,12 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .type_parameters(:NewFailure)
+          type_parameters(:NewFailure, :NewSuccess)
+            .override
             .params(
-              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType])
+              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
             ).returns(
-              Result[T.type_parameter(:NewFailure), SuccessType]
+              Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
             )
         }
         def flat_map_failure(&blk)
@@ -542,28 +583,36 @@ module Mayak
         end
 
         sig(:final) {
-          override
-            .params(value: SuccessType)
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccess)
+            .override
+            .params(value: T.type_parameter(:NewSuccess))
+            .returns(Result[FailureType, T.any(T.type_parameter(:NewSuccess), SuccessType)])
         }
         def recover(value)
-          Mayak::Monads::Result::Success[FailureType, SuccessType].new(value)
+          ::Mayak::Monads::Result::Success[FailureType, T.any(T.type_parameter(:NewSuccess), SuccessType)].new(value)
         end
 
+
         sig(:final) {
-          override
-            .params(blk: T.proc.params(arg0: FailureType).returns(SuccessType))
-            .returns(Result[FailureType, SuccessType])
+          type_parameters(:NewSuccessType)
+            .override
+            .params(blk: T.proc.params(arg0: FailureType).returns(T.type_parameter(:NewSuccessType)))
+            .returns(Result[FailureType, T.any(SuccessType, T.type_parameter(:NewSuccessType))])
         }
         def recover_with(&blk)
-          Mayak::Monads::Result::Success[FailureType, SuccessType].new(blk.call(@failure_value))
+          ::Mayak::Monads::Result::Success[FailureType, T.any(SuccessType, T.type_parameter(:NewSuccessType))].new(
+            blk.call(@failure_value)
+          )
         end
 
         sig(:final) {
-          override
-            .type_parameters(:NewFailure)
-            .params(blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), SuccessType]))
-            .returns(Result[T.type_parameter(:NewFailure), SuccessType])
+          type_parameters(:NewFailure, :NewSuccess)
+            .override
+            .params(
+              blk: T.proc.params(arg0: FailureType).returns(Result[T.type_parameter(:NewFailure), T.type_parameter(:NewSuccess)])
+            ).returns(
+              Result[T.type_parameter(:NewFailure), T.any(T.type_parameter(:NewSuccess), SuccessType)]
+            )
         }
         def recover_with_result(&blk)
           blk.call(@failure_value)
