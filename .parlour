@@ -1,2 +1,2 @@
 output_file:
-  rbi: ./lib/bundled_rbi/mayak.rbi
+  rbi: ./rbi/mayak.rbi
