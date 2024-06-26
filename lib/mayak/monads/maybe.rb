@@ -68,11 +68,11 @@ module Mayak
 
       sig {
         abstract
-          .type_parameters(:Result)
+          .type_parameters(:NoneResult, :SomeResult)
           .params(
-            none_branch: T.proc.returns(T.type_parameter(:Result)),
-            some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
-          ).returns(T.type_parameter(:Result))
+            none_branch: T.proc.returns(T.type_parameter(:NoneResult)),
+            some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:SomeResult))
+          ).returns(T.any(T.type_parameter(:NoneResult), T.type_parameter(:SomeResult)))
       }
       def either(none_branch, some_branch)
       end
@@ -255,11 +255,11 @@ module Mayak
 
         sig(:final) {
           override
-            .type_parameters(:Result)
+            .type_parameters(:NoneResult, :SomeResult)
             .params(
-              none_branch: T.proc.returns(T.type_parameter(:Result)),
-              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
-            ).returns(T.type_parameter(:Result))
+              none_branch: T.proc.returns(T.type_parameter(:NoneResult)),
+              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:SomeResult))
+            ).returns(T.any(T.type_parameter(:NoneResult), T.type_parameter(:SomeResult)))
         }
         def either(none_branch, some_branch)
           some_branch.call(@value)
@@ -378,11 +378,11 @@ module Mayak
 
         sig(:final) {
           override
-            .type_parameters(:Result)
+            .type_parameters(:NoneResult, :SomeResult)
             .params(
-              none_branch: T.proc.returns(T.type_parameter(:Result)),
-              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:Result))
-            ).returns(T.type_parameter(:Result))
+              none_branch: T.proc.returns(T.type_parameter(:NoneResult)),
+              some_branch: T.proc.params(arg0: Value).returns(T.type_parameter(:SomeResult))
+            ).returns(T.any(T.type_parameter(:NoneResult), T.type_parameter(:SomeResult)))
         }
         def either(none_branch, some_branch)
           none_branch.call

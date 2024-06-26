@@ -98,33 +98,47 @@ divide(10, 2).value_or(0) # 5
 divide(10, 0).value_or(0) # 0
 ```
 
-### Methods
-
-#### `#to_dry`
-
-Converts an instance of a monad in to an instance of corresponding dry-monad.
-
+Note that the type of value passed into `value_or` shouldn't necessarily be of the same type as `Maybe`. If it doesn't match
+the result type of method invokation will be union of `Maybe` type and type of value passed:
 ```ruby
-include Mayak::Monads::Maybe::Mixin
-
-Maybe(10).to_dry  # Some(10): Dry::Monads::Maybe::Some
-Maybe(nil).to_dry # None:  Dry::Monads::Maybe::None
+result = divide(10, 2).value_or("None")
+T.reveal_type(result) # T.any(String, Integer)
 ```
 
-#### `.from_dry`
+You can also pass `nil` into `value_or`, and the result type of the expression will `T.nilable` type:
+```ruby
+result = divide(10, 2).value_or(nil)
+T.reveal_type(result) # T.nilable(Integer)
+```
 
-Converts instance of `Dry::Monads::Maybe` into instance `Mayak::Monads::Maybe`
+### Methods
+
+#### `#either`
+
+Receives two lambda functions representing branches: none-branch, and some-branch. If a `Maybe` is `None` than none-branch will be executedand result of method invokation will be a result of none-branch execution. If a `Maybe` is `Some` than some-branch will be executed with a value of monad and result of method invokation will be a result of some-branch execution.
 
 ```ruby
-include Mayak::Monads
+divide(10, 2).either(
+  -> { 0 },
+  -> (value) { value * 100 }
+) # 50
 
-Maybe.from_dry(Dry::Monads::Some(10)) # Some[Integer](value = 20)
-Maybe.from_dry(Dry::Monads::None())   # None
+
+divide(10, 0).either(
+  -> { 0 },
+  -> (value) { value * 100 }
+) # 0
+
+result = divide(10, 0).either(
+  -> { "Error" },
+  -> (value) { value * 100 }
+)
+T.reveal_type(result) # T.any(String, Integer)
 ```
 
 #### `#map`
 
-The same as `fmap` in a dry-monads `Maybe`. Allows to modify the value with a block if it's present.
+The same as `fmap` in a dry-monads `Maybe`. Allows to modify the value inside the `Maybe` with a block if it's present. Returns `Maybe` itself.
 
 ```ruby
 sig { returns(Mayak::Monads::Maybe[Integer]) }
@@ -621,33 +635,6 @@ Try { raise "Boom" }.failure_or(StandardError.new("Error")) # #<StandardError: B
 
 ### Methods
 
-#### `#to_dry`
-
-Converts an instance of a monad in to an instance of corresponding dry-monad.
-
-```ruby
-include Mayak::Monads::Try::Mixin
-
-Try { 10 }.to_dry  # Try::Value(10)
-Try { raise "Error" }.to_dry # Try::Error(RuntimeError: Error)
-```
-
-
-#### `.from_dry`
-
-Converts instance of `Dry::Monads::Try` into instance `Mayak::Monads::Try`
-
-```ruby
-include Mayak::Monads
-
-error = StandardError.new("Error")
-Try.from_dry(Dry::Monads::Try::Value.new([StandardError], 10)) # Try::Success[T.untyped](value = 10)
-Try.from_dry(Dry::Monads::Try::Error.new(error))   # Try::Failure[T.untyped](error=#<StandardError: Error>)
-```
-
-Unfortunately `.from_dry` doesn't preserve types due to the way `Dry::Monads::Try` is written, so
-this method always returns `Mayak::Monads::Try[T.untyped]`.
-
 #### `#map`
 
 The same as `fmap` in a dry-monads `Try`. Allows to modify the value with a block if it's present.
@@ -1087,38 +1074,6 @@ Result::Failure[String, Integer].new("Error").failure_or("Another Error") # "Err
 ```
 
 ### Methods
-
-#### `#to_dry`
-
-Converts an instance of a monad in to an instance of corresponding dry-monad.
-
-```ruby
-Result::Success[String, Integer].new(10).to_dry      # Success(10): Dry::Monads::Result::Success
-Result::Failure[String, Integer].new("Error").to_dry # Failure("Error"): Dry::Monads::Result::Failure
-```
-
-
-#### `.from_dry`
-
-Converts instance of `Dry::Monads::Result` into instance `Mayak::Monads::Result`
-
-```ruby
-sig { returns(Dry::Monads::Result::Success[String, Integer]) }
-def dry_success
-  Dry::Monads::Result::Success.new(10)
-end
-
-sig { returns(Dry::Monads::Result::Success[String, Integer]) }
-def dry_failure
-  Dry::Monads::Result::Failure.new("Error")
-end
-
-Try.from_dry(dry_success) # Mayak::Monads::Result::Success[String, Integer](value = 10)
-Try.from_dry(dry_failure) # Mayak::Monads::Result::Success[String, Integer]("Error")
-```
-
-Unfortunately `.from_dry` doesn't preserve types due to the way `Dry::Monads::Try` is written, so
-this method always returns `Mayak::Monads::Try[T.untyped]`.
 
 #### `#map`
 
