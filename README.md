@@ -1,4 +1,7 @@
-# Mayak
+[gem]: https://rubygems.org/gems/mayak
+[actions]: https://github.com/dnvkv/mayak/actions
+
+# Mayak [![Gem Version](https://badge.fury.io/rb/mayak.svg)][gem] [![CI Status](https://github.com/dnvkv/mayak/actions/workflows/ci.yml/badge.svg)][actions]
 
 ### Overview
 
