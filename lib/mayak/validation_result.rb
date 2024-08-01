@@ -14,6 +14,15 @@ module Mayak
     Error = type_member(:out)
 
     sig {
+      abstract
+        .type_parameters(:NewErrorType)
+        .params(another: ::Mayak::ValidationResult[T.type_parameter(:NewErrorType)])
+        .returns(::Mayak::ValidationResult[T.any(Error, T.type_parameter(:NewErrorType))])
+    }
+    def combine(another)
+    end
+
+    sig {
       abstract.type_parameters(
         :NewError
       ).params(
@@ -23,6 +32,15 @@ module Mayak
       )
     }
     def map_errors(&blk)
+    end
+
+    sig {
+      abstract
+        .type_parameters(:NewErrorType)
+        .params(another: ::Mayak::ValidationResult[T.type_parameter(:NewErrorType)])
+        .returns(::Mayak::ValidationResult[T.any(Error, T.type_parameter(:NewErrorType))])
+    }
+    def combine(another)
     end
 
     sig { returns(T::Boolean) }
@@ -86,6 +104,16 @@ module Mayak
       def map_errors(&blk)
         self
       end
+
+      sig {
+        override
+          .type_parameters(:NewErrorType)
+          .params(another: ::Mayak::ValidationResult[T.type_parameter(:NewErrorType)])
+          .returns(::Mayak::ValidationResult[T.any(Error, T.type_parameter(:NewErrorType))])
+      }
+      def combine(another)
+        another
+      end
     end
 
     class Invalid < T::Struct
@@ -97,6 +125,25 @@ module Mayak
       Error = type_member
 
       const :errors, T::Array[Error]
+
+      sig {
+        override
+          .type_parameters(:NewErrorType)
+          .params(another: ::Mayak::ValidationResult[T.type_parameter(:NewErrorType)])
+          .returns(::Mayak::ValidationResult[T.any(Error, T.type_parameter(:NewErrorType))])
+      }
+      def combine(another)
+        case another
+        when ::Mayak::ValidationResult::Valid
+          self
+        when ::Mayak::ValidationResult::Invalid
+          ::Mayak::ValidationResult::Invalid[T.any(Error, T.type_parameter(:NewErrorType))].new(
+            errors: errors + another.errors
+          )
+        else
+          T.absurd(another)
+        end
+      end
 
       sig {
         override.type_parameters(
