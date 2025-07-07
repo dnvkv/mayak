@@ -9,40 +9,40 @@ module Mayak
 
     abstract!
 
-    ResponseEntity = type_member
-    ResponseType   = type_member
+    In  = type_member(:in)
+    Out = type_member(:out)
 
-    sig { abstract.params(entity: ResponseEntity).returns(ResponseType) }
-    def encode(entity)
+    sig { abstract.params(input: In).returns(Out) }
+    def encode(input)
     end
 
     sig {
-      type_parameters(:NewResponse)
-        .params(blk: T.proc.params(arg0: ResponseType).returns(T.type_parameter(:NewResponse)))
-        .returns(::Mayak::Encoder[ResponseEntity, T.type_parameter(:NewResponse)])
+      type_parameters(:In2)
+        .params(blk: T.proc.params(arg0: Out).returns(T.type_parameter(:In2)))
+        .returns(::Mayak::Encoder[In, T.type_parameter(:In2)])
     }
-    def map_request(&blk)
-      ::Mayak::Encoder::FromFunction[ResponseEntity, T.type_parameter(:NewResponse)].new do |entity|
+    def map(&blk)
+      ::Mayak::Encoder::Implementation[In, T.type_parameter(:In2)].new do |entity|
         blk.call(encode(entity))
       end
     end
 
-    class FromFunction
+    class Implementation
       extend T::Sig
       extend T::Generic
       extend T::Helpers
 
       include ::Mayak::Encoder
 
-      ResponseEntity = type_member
-      ResponseType   = type_member
+      In = type_member
+      Out   = type_member
 
-      sig { params(function: T.proc.params(response: ResponseEntity).returns(ResponseType)).void }
+      sig { params(function: T.proc.params(in: In).returns(Out)).void }
       def initialize(&function)
-        @function = T.let(function, T.proc.params(response: ResponseEntity).returns(ResponseType))
+        @function = T.let(function, T.proc.params(in: In).returns(Out))
       end
 
-      sig { override.params(entity: ResponseEntity).returns(ResponseType) }
+      sig { override.params(entity: In).returns(Out) }
       def encode(entity)
         @function.call(entity)
       end

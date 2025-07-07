@@ -12,8 +12,8 @@ module Mayak
 
       include ::Mayak::Encoder
 
-      ResponseEntity = type_member
-      ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
+      In = type_member
+      Out   = type_member {{ fixed: Mayak::Http::Response }}
 
       class IdentityEncoder
         extend T::Sig
@@ -22,33 +22,12 @@ module Mayak
 
         include ::Mayak::Http::Encoder
 
-        ResponseEntity = type_member {{ fixed: ::Mayak::Http::Response }}
-        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
+        In  = type_member {{ fixed: ::Mayak::Http::Response }}
+        Out = type_member {{ fixed: Mayak::Http::Response }}
 
-        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
+        sig { override.params(entity: In).returns(Out) }
         def encode(entity)
           entity
-        end
-      end
-
-      class FromFunction
-        extend T::Sig
-        extend T::Generic
-        extend T::Helpers
-
-        include ::Mayak::Http::Encoder
-
-        ResponseEntity = type_member
-        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
-
-        sig { params(function: T.proc.params(response: ResponseEntity).returns(ResponseType)).void }
-        def initialize(&function)
-          @function = T.let(function, T.proc.params(response: ResponseEntity).returns(ResponseType))
-        end
-
-        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
-        def encode(entity)
-          @function.call(entity)
         end
       end
 
@@ -62,10 +41,10 @@ module Mayak
         const :default_status,  Integer
         const :default_headers, T::Hash[String, String]
 
-        ResponseEntity = type_member {{ fixed: ::Mayak::HashSerializable }}
-        ResponseType   = type_member {{ fixed: Mayak::Http::Response }}
+        In = type_member {{ fixed: ::Mayak::HashSerializable }}
+        Out   = type_member {{ fixed: Mayak::Http::Response }}
 
-        sig { override.params(entity: ResponseEntity).returns(ResponseType) }
+        sig { override.params(entity: In).returns(Out) }
         def encode(entity)
           Mayak::Http::Response.new(
             status:  default_status,
