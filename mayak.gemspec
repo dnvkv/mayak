@@ -4,7 +4,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "mayak"
-  spec.version       = "0.2.0"
+  spec.version       = "0.2.1"
   spec.summary       = "Set of fully typed utility classes and interfaces integrated with Sorbet."
   spec.description   = spec.summary
   spec.authors       = ["Daniil Bober"]
