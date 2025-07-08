@@ -19,6 +19,8 @@ require_relative 'mayak/codec'
 require_relative 'mayak/hash_serializable'
 require_relative 'mayak/lazy'
 
+require_relative 'mayak/json_codec/from_hash_serializable'
+
 require_relative 'mayak/caching/unbounded_cache'
 require_relative 'mayak/caching/lru_cache'
 

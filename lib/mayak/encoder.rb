@@ -26,7 +26,6 @@ module Mayak
         blk.call(encode(entity))
       end
     end
-
     class Implementation
       extend T::Sig
       extend T::Generic
@@ -34,8 +33,8 @@ module Mayak
 
       include ::Mayak::Encoder
 
-      In = type_member
-      Out   = type_member
+      In  = type_member
+      Out = type_member
 
       sig { params(function: T.proc.params(in: In).returns(Out)).void }
       def initialize(&function)

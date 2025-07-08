@@ -26147,6 +26147,12 @@ end
 # source://prism//lib/prism/translation.rb#6
 module Prism::Translation; end
 
+module Parser; end
+class Parser::Base; end
+module Parser::Source; end
+class Parser::Source::Range; end
+class Parser::Diagnostic; end
+
 # This class is the entry-point for converting a prism syntax tree into the
 # whitequark/parser gem's syntax tree. It inherits from the base parser for
 # the parser gem, and overrides the parse* methods to parse with prism and

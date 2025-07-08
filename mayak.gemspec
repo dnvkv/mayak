@@ -4,7 +4,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "mayak"
-  spec.version       = "0.2.1"
+  spec.version       = "0.2.2"
   spec.summary       = "Set of fully typed utility classes and interfaces integrated with Sorbet."
   spec.description   = spec.summary
   spec.authors       = ["Daniil Bober"]
@@ -15,6 +15,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'sorbet-runtime'
   spec.add_dependency 'sorbet'
+  spec.add_dependency 'sorbet-coerce'
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rspec"
