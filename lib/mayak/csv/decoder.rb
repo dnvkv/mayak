@@ -106,7 +106,8 @@ module Mayak
             end
           end
           header, *rows = lines
-          return Mayak::Monads::Try::Success.new([]) if rows.nil? || rows.empty?
+
+          return Mayak::Monads::Try::Success.new([]) if rows.empty?
           return Mayak::Monads::Try::Success.new([]) if header.nil? || header.empty?
           keys = header.split(separator)
           parse_results = rows.map.with_index do |row, index|
