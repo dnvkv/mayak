@@ -39,5 +39,8 @@ require_relative 'mayak/monads/try'
 
 require_relative 'mayak/predicates/rule'
 
+require_relative 'mayak/validations/contract'
+require_relative 'mayak/validations/rule'
+
 module Mayak
 end
