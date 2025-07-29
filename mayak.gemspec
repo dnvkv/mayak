@@ -4,14 +4,14 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "mayak"
-  spec.version       = "0.2.6"
+  spec.version       = "0.2.7"
   spec.summary       = "Set of fully typed utility classes and interfaces integrated with Sorbet."
   spec.description   = spec.summary
   spec.authors       = ["Daniil Bober"]
-  spec.files         = Dir["CHANGELOG.md", "LICENSE", "README.md", "mayak.gemspec", "lib/**/*"]
+  spec.files         = Dir["CHANGELOG.md", "LICENSE", "README.md", "mayak.gemspec", "lib/**/*", "rbi/**/*"]
   spec.license       = "MIT"
   spec.executables   = []
-  spec.require_paths = ["lib"]
+  spec.require_paths = ["lib", "rbi"]
 
   spec.add_dependency 'sorbet-runtime'
   spec.add_dependency 'sorbet'
