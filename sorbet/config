@@ -2,6 +2,3 @@
 .
 --ignore
 /vendor/bundle
-
---ignore
-/rbi/mayak.rbi
