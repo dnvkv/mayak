@@ -1,6 +1,5 @@
 # typed: true
 
-
 module Mayak
   class JsonCodec::FromHashSerializable
     extend T::Sig
